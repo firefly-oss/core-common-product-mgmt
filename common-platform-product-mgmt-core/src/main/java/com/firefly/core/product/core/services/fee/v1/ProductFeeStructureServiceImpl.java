@@ -17,9 +17,9 @@
 
 package com.firefly.core.product.core.services.fee.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
-import com.firefly.common.core.queries.PaginationUtils;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationUtils;
 import com.firefly.core.product.core.mappers.fee.v1.ProductFeeStructureMapper;
 import com.firefly.core.product.interfaces.dtos.fee.v1.ProductFeeStructureDTO;
 import com.firefly.core.product.models.entities.fee.v1.ProductFeeStructure;

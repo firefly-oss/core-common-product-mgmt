@@ -17,9 +17,9 @@
 
 package com.firefly.core.product.core.services.core.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
-import com.firefly.common.core.queries.PaginationUtils;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationUtils;
 import com.firefly.core.product.core.mappers.core.v1.ProductMapper;
 import com.firefly.core.product.interfaces.dtos.core.v1.ProductDTO;
 import com.firefly.core.product.models.entities.core.v1.Product;

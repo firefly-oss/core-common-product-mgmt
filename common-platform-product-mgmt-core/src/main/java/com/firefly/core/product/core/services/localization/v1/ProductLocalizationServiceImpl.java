@@ -17,9 +17,9 @@
 
 package com.firefly.core.product.core.services.localization.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
-import com.firefly.common.core.queries.PaginationUtils;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationUtils;
 import com.firefly.core.product.core.mappers.localization.v1.ProductLocalizationMapper;
 import com.firefly.core.product.interfaces.dtos.localization.v1.ProductLocalizationDTO;
 import com.firefly.core.product.models.entities.localization.v1.ProductLocalization;

@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.core.services.documentation.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.interfaces.dtos.documentation.v1.ProductDocumentationRequirementDTO;
 import com.firefly.core.product.interfaces.enums.documentation.v1.ContractingDocTypeEnum;
 import reactor.core.publisher.Flux;

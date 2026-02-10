@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.core.services.pricing.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.core.mappers.pricing.v1.ProductPricingLocalizationMapper;
 import com.firefly.core.product.interfaces.dtos.pricing.v1.ProductPricingLocalizationDTO;
 import com.firefly.core.product.models.entities.pricing.v1.ProductPricingLocalization;

@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.core.services.lifecycle.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.interfaces.dtos.lifecycle.v1.ProductLifecycleDTO;
 import reactor.core.publisher.Mono;
 import java.util.UUID;

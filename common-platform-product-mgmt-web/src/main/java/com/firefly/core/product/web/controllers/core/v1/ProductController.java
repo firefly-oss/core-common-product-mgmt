@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.web.controllers.core.v1;
 
-import com.firefly.common.core.queries.PaginationRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.queries.PaginationRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.core.services.core.v1.ProductServiceImpl;
 import com.firefly.core.product.interfaces.dtos.core.v1.ProductDTO;
 import io.swagger.v3.oas.annotations.Operation;
