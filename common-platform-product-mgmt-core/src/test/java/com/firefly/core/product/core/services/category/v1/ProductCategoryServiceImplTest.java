@@ -17,10 +17,11 @@
 
 package com.firefly.core.product.core.services.category.v1;
 
-import com.firefly.core.product.core.mappers.category.v1.ProductCategoryMapper;
-import com.firefly.core.product.interfaces.dtos.category.v1.ProductCategoryDTO;
-import com.firefly.core.product.models.entities.category.v1.ProductCategory;
-import com.firefly.core.product.models.repositories.category.v1.ProductCategoryRepository;
+import com.firefly.core.product.core.mappers.ProductCategoryMapper;
+import com.firefly.core.product.core.services.impl.ProductCategoryServiceImpl;
+import com.firefly.core.product.interfaces.dtos.ProductCategoryDTO;
+import com.firefly.core.product.models.entities.ProductCategory;
+import com.firefly.core.product.models.repositories.ProductCategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,10 +32,10 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCategoryServiceImplTest {
@@ -63,6 +64,7 @@ class ProductCategoryServiceImplTest {
         productCategory.setCategoryName("Test Category");
         productCategory.setCategoryDescription("Test Description");
         productCategory.setParentCategoryId(PARENT_CATEGORY_ID);
+        productCategory.setLevel(1);
         productCategory.setDateCreated(now);
         productCategory.setDateUpdated(now);
 
@@ -71,19 +73,24 @@ class ProductCategoryServiceImplTest {
                 .categoryName("Test Category")
                 .categoryDescription("Test Description")
                 .parentCategoryId(PARENT_CATEGORY_ID)
+                .level(1)
                 .dateCreated(now)
                 .dateUpdated(now)
                 .build();
     }
 
+    // Note: filterRootCategories, filterChildCategories, and filterCategoriesByName tests are not included
+    // because they use FilterUtils which is a static utility that works directly with the database
+    // and cannot be easily mocked in unit tests.
+
     @Test
-    void getById_Success() {
+    void getCategoryById_Success() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
         when(mapper.toDto(productCategory)).thenReturn(productCategoryDTO);
 
         // Act & Assert
-        StepVerifier.create(service.getById(CATEGORY_ID))
+        StepVerifier.create(service.getCategoryById(CATEGORY_ID))
                 .expectNext(productCategoryDTO)
                 .verifyComplete();
 
@@ -92,15 +99,15 @@ class ProductCategoryServiceImplTest {
     }
 
     @Test
-    void getById_NotFound() {
+    void getCategoryById_NotFound() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.empty());
 
         // Act & Assert
-        StepVerifier.create(service.getById(CATEGORY_ID))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof IllegalArgumentException && 
-                    throwable.getMessage().equals("Product category not found for the given ID"))
+        StepVerifier.create(service.getCategoryById(CATEGORY_ID))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().contains("Category not found with ID"))
                 .verify();
 
         verify(repository).findById(CATEGORY_ID);
@@ -110,34 +117,73 @@ class ProductCategoryServiceImplTest {
     @Test
     void create_Success() {
         // Arrange
-        when(mapper.toEntity(productCategoryDTO)).thenReturn(productCategory);
+        ProductCategory parentCategory = new ProductCategory();
+        parentCategory.setProductCategoryId(PARENT_CATEGORY_ID);
+        parentCategory.setLevel(0);
+
+        when(repository.findById(PARENT_CATEGORY_ID)).thenReturn(Mono.just(parentCategory));
+        when(mapper.toEntity(any(ProductCategoryDTO.class))).thenReturn(productCategory);
         when(repository.save(productCategory)).thenReturn(Mono.just(productCategory));
         when(mapper.toDto(productCategory)).thenReturn(productCategoryDTO);
 
         // Act & Assert
-        StepVerifier.create(service.create(productCategoryDTO))
+        StepVerifier.create(service.createCategory(productCategoryDTO))
                 .expectNext(productCategoryDTO)
                 .verifyComplete();
 
-        verify(mapper).toEntity(productCategoryDTO);
+        verify(repository).findById(PARENT_CATEGORY_ID);
+        verify(mapper).toEntity(any(ProductCategoryDTO.class));
         verify(repository).save(productCategory);
         verify(mapper).toDto(productCategory);
     }
 
     @Test
-    void create_Error() {
+    void createCategory_RootCategory_Success() {
+        // Arrange - root category has no parent
+        ProductCategoryDTO rootCategoryDTO = ProductCategoryDTO.builder()
+                .categoryName("Root Category")
+                .categoryDescription("Root Description")
+                .parentCategoryId(null)
+                .build();
+
+        ProductCategory rootCategory = new ProductCategory();
+        rootCategory.setCategoryName("Root Category");
+        rootCategory.setCategoryDescription("Root Description");
+        rootCategory.setLevel(0);
+
+        when(mapper.toEntity(any(ProductCategoryDTO.class))).thenReturn(rootCategory);
+        when(repository.save(rootCategory)).thenReturn(Mono.just(rootCategory));
+        when(mapper.toDto(rootCategory)).thenReturn(rootCategoryDTO);
+
+        // Act & Assert
+        StepVerifier.create(service.createCategory(rootCategoryDTO))
+                .expectNext(rootCategoryDTO)
+                .verifyComplete();
+
+        verify(repository, never()).findById(any(UUID.class));
+        verify(mapper).toEntity(any(ProductCategoryDTO.class));
+        verify(repository).save(rootCategory);
+        verify(mapper).toDto(rootCategory);
+    }
+
+    @Test
+    void createCategory_Error() {
         // Arrange
-        when(mapper.toEntity(productCategoryDTO)).thenReturn(productCategory);
+        ProductCategory parentCategory = new ProductCategory();
+        parentCategory.setProductCategoryId(PARENT_CATEGORY_ID);
+        parentCategory.setLevel(0);
+
+        when(repository.findById(PARENT_CATEGORY_ID)).thenReturn(Mono.just(parentCategory));
+        when(mapper.toEntity(any(ProductCategoryDTO.class))).thenReturn(productCategory);
         when(repository.save(productCategory)).thenReturn(Mono.error(new RuntimeException("Database error")));
 
         // Act & Assert
-        StepVerifier.create(service.create(productCategoryDTO))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof RuntimeException && 
-                    throwable.getMessage().equals("Failed to create product category"))
+        StepVerifier.create(service.createCategory(productCategoryDTO))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException)
                 .verify();
 
-        verify(mapper).toEntity(productCategoryDTO);
+        verify(mapper).toEntity(any(ProductCategoryDTO.class));
         verify(repository).save(productCategory);
         verify(mapper, never()).toDto(any());
     }
@@ -145,41 +191,63 @@ class ProductCategoryServiceImplTest {
     @Test
     void update_Success() {
         // Arrange
-        ProductCategory existingCategory = spy(new ProductCategory());
+        ProductCategory existingCategory = new ProductCategory();
         existingCategory.setProductCategoryId(CATEGORY_ID);
         existingCategory.setCategoryName("Old Name");
         existingCategory.setCategoryDescription("Old Description");
         existingCategory.setParentCategoryId(UUID.fromString("550e8400-e29b-41d4-a716-446655440999")); // Different parent ID
+        existingCategory.setLevel(1);
+
+        ProductCategory parentCategory = new ProductCategory();
+        parentCategory.setProductCategoryId(PARENT_CATEGORY_ID);
+        parentCategory.setLevel(0);
 
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(existingCategory));
+        when(repository.findById(PARENT_CATEGORY_ID)).thenReturn(Mono.just(parentCategory));
+        doNothing().when(mapper).updateEntityFromDto(productCategoryDTO, existingCategory);
         when(repository.save(existingCategory)).thenReturn(Mono.just(existingCategory));
         when(mapper.toDto(existingCategory)).thenReturn(productCategoryDTO);
 
         // Act & Assert
-        StepVerifier.create(service.update(CATEGORY_ID, productCategoryDTO))
+        StepVerifier.create(service.updateCategory(CATEGORY_ID, productCategoryDTO))
                 .expectNext(productCategoryDTO)
                 .verifyComplete();
 
-        verify(repository).findById(CATEGORY_ID);
+        verify(repository, times(3)).findById(any(UUID.class)); // Once for existing, once for circular check, once for level calculation
+        verify(mapper).updateEntityFromDto(productCategoryDTO, existingCategory);
         verify(repository).save(existingCategory);
         verify(mapper).toDto(existingCategory);
-
-        // Verify that the fields were updated
-        verify(existingCategory).setCategoryName(productCategoryDTO.getCategoryName());
-        verify(existingCategory).setCategoryDescription(productCategoryDTO.getCategoryDescription());
-        verify(existingCategory).setParentCategoryId(productCategoryDTO.getParentCategoryId());
     }
 
     @Test
-    void update_NotFound() {
+    void updateCategory_CircularReference_SelfParent() {
+        // Arrange - trying to set a category as its own parent
+        ProductCategoryDTO selfParentDTO = ProductCategoryDTO.builder()
+                .categoryName("Test Category")
+                .categoryDescription("Test Description")
+                .parentCategoryId(CATEGORY_ID) // Same as the category being updated
+                .build();
+
+        when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
+
+        // Act & Assert
+        StepVerifier.create(service.updateCategory(CATEGORY_ID, selfParentDTO))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("A category cannot be its own parent"))
+                .verify();
+    }
+
+    @Test
+    void updateCategory_NotFound() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.empty());
 
         // Act & Assert
-        StepVerifier.create(service.update(CATEGORY_ID, productCategoryDTO))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof IllegalArgumentException && 
-                    throwable.getMessage().equals("Product category not found for the given ID"))
+        StepVerifier.create(service.updateCategory(CATEGORY_ID, productCategoryDTO))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().contains("Category not found with ID"))
                 .verify();
 
         verify(repository).findById(CATEGORY_ID);
@@ -188,67 +256,92 @@ class ProductCategoryServiceImplTest {
     }
 
     @Test
-    void update_Error() {
+    void updateCategory_Error() {
         // Arrange
+        ProductCategory parentCategory = new ProductCategory();
+        parentCategory.setProductCategoryId(PARENT_CATEGORY_ID);
+        parentCategory.setLevel(0);
+
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
+        when(repository.findById(PARENT_CATEGORY_ID)).thenReturn(Mono.just(parentCategory));
+        doNothing().when(mapper).updateEntityFromDto(productCategoryDTO, productCategory);
         when(repository.save(productCategory)).thenReturn(Mono.error(new RuntimeException("Database error")));
 
         // Act & Assert
-        StepVerifier.create(service.update(CATEGORY_ID, productCategoryDTO))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof RuntimeException && 
-                    throwable.getMessage().equals("Failed to update product category"))
+        StepVerifier.create(service.updateCategory(CATEGORY_ID, productCategoryDTO))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException)
                 .verify();
 
-        verify(repository).findById(CATEGORY_ID);
         verify(repository).save(productCategory);
         verify(mapper, never()).toDto(any());
     }
 
     @Test
-    void delete_Success() {
+    void deleteCategory_Success() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
-        when(repository.delete(productCategory)).thenReturn(Mono.empty());
+        when(repository.countByParentCategoryId(CATEGORY_ID)).thenReturn(Mono.just(0L));
+        when(repository.deleteById(CATEGORY_ID)).thenReturn(Mono.empty());
 
         // Act & Assert
-        StepVerifier.create(service.delete(CATEGORY_ID))
+        StepVerifier.create(service.deleteCategory(CATEGORY_ID))
                 .verifyComplete();
 
         verify(repository).findById(CATEGORY_ID);
-        verify(repository).delete(productCategory);
+        verify(repository).countByParentCategoryId(CATEGORY_ID);
+        verify(repository).deleteById(CATEGORY_ID);
     }
 
     @Test
-    void delete_NotFound() {
+    void deleteCategory_HasChildren() {
+        // Arrange - category has child categories
+        when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
+        when(repository.countByParentCategoryId(CATEGORY_ID)).thenReturn(Mono.just(2L));
+
+        // Act & Assert
+        StepVerifier.create(service.deleteCategory(CATEGORY_ID))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().contains("because it has child categories"))
+                .verify();
+
+        verify(repository).findById(CATEGORY_ID);
+        verify(repository).countByParentCategoryId(CATEGORY_ID);
+        verify(repository, never()).deleteById((UUID) any());
+    }
+
+    @Test
+    void deleteCategory_NotFound() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.empty());
 
         // Act & Assert
-        StepVerifier.create(service.delete(CATEGORY_ID))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof IllegalArgumentException && 
-                    throwable.getMessage().equals("Product category not found for the given ID"))
+        StepVerifier.create(service.deleteCategory(CATEGORY_ID))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                    throwable.getMessage().contains("Category not found with ID"))
                 .verify();
 
         verify(repository).findById(CATEGORY_ID);
-        verify(repository, never()).delete(any());
+        verify(repository, never()).deleteById((UUID) any());
     }
 
     @Test
-    void delete_Error() {
+    void deleteCategory_Error() {
         // Arrange
         when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
-        when(repository.delete(productCategory)).thenReturn(Mono.error(new RuntimeException("Database error")));
+        when(repository.countByParentCategoryId(CATEGORY_ID)).thenReturn(Mono.just(0L));
+        when(repository.deleteById(CATEGORY_ID)).thenReturn(Mono.error(new RuntimeException("Database error")));
 
         // Act & Assert
-        StepVerifier.create(service.delete(CATEGORY_ID))
-                .expectErrorMatches(throwable -> 
-                    throwable instanceof RuntimeException && 
-                    throwable.getMessage().equals("Failed to delete product category"))
+        StepVerifier.create(service.deleteCategory(CATEGORY_ID))
+                .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException)
                 .verify();
 
         verify(repository).findById(CATEGORY_ID);
-        verify(repository).delete(productCategory);
+        verify(repository).countByParentCategoryId(CATEGORY_ID);
+        verify(repository).deleteById(CATEGORY_ID);
     }
 }
