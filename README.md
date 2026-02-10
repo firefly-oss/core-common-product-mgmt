@@ -105,7 +105,7 @@ The Product Wizard functionality provides a streamlined, step-by-step approach t
 
 ### Enterprise Technology Stack
 
-- **Java 21**: Enterprise-grade programming language with support for virtual threads and modern language features
+- **Java 25**: Enterprise-grade programming language with support for virtual threads and modern language features
 - **Spring Boot**: Production-ready application framework with comprehensive enterprise capabilities
 - **Spring WebFlux**: Reactive web framework for building non-blocking, event-driven applications
 - **Spring Data R2DBC**: Reactive data access framework for high-throughput database operations
@@ -527,14 +527,14 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/features \
 
 # Response (200 OK)
 # {
-#   "productFeatureId": 1,
-#   "productId": 1,
-#   "featureType": "STANDARD",
-#   "featureName": "Online Banking Access",
-#   "featureDescription": "24/7 access to account via online banking",
-#   "isMandatory": true,
-#   "dateCreated": "2023-01-01T00:00:00.000000",
-#   "dateUpdated": "2023-01-01T00:00:00.000000"
+# "productFeatureId": 1,
+# "productId": 1,
+# "featureType": "STANDARD",
+# "featureName": "Online Banking Access",
+# "featureDescription": "24/7 access to account via online banking",
+# "isMandatory": true,
+# "dateCreated": "2023-01-01T00:00:00.000000",
+# "dateUpdated": "2023-01-01T00:00:00.000000"
 # }
 ```
 
@@ -579,10 +579,10 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/pricing \
 
 # Response (201 Created)
 # {
-#   "productPricingId": 1,
-#   "productId": 1,
-#   "pricingType": "TIERED_INTEREST_RATE",
-#   ...
+# "productPricingId": 1,
+# "productId": 1,
+# "pricingType": "TIERED_INTEREST_RATE",
+# ...
 # }
 ```
 
@@ -604,11 +604,11 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/pricing/{pricingI
 
 # Response (201 Created)
 # {
-#   "productPricingLocalizationId": 1,
-#   "productPricingId": 1,
-#   "currencyCode": "EUR",
-#   "localizedAmountValue": 3.25,
-#   ...
+# "productPricingLocalizationId": 1,
+# "productPricingId": 1,
+# "currencyCode": "EUR",
+# "localizedAmountValue": 3.25,
+# ...
 # }
 ```
 
@@ -637,10 +637,10 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/lifecycle \
 
 # Response (201 Created)
 # {
-#   "productLifecycleId": 1,
-#   "productId": 1,
-#   "lifecycleStatus": "PENDING_APPROVAL",
-#   ...
+# "productLifecycleId": 1,
+# "productId": 1,
+# "lifecycleStatus": "PENDING_APPROVAL",
+# ...
 # }
 ```
 
@@ -661,16 +661,16 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/limits \
 
 # Response (200 OK)
 # {
-#   "productLimitId": 1,
-#   "productId": 1,
-#   "limitType": "WITHDRAWAL_LIMIT",
-#   "limitValue": 5000000,
-#   "limitUnit": "EUR",
-#   "timePeriod": "NONE",
-#   "effectiveDate": "2023-06-01",
-#   "expiryDate": null,
-#   "dateCreated": "2023-01-01T00:00:00.000000",
-#   "dateUpdated": "2023-01-01T00:00:00.000000"
+# "productLimitId": 1,
+# "productId": 1,
+# "limitType": "WITHDRAWAL_LIMIT",
+# "limitValue": 5000000,
+# "limitUnit": "EUR",
+# "timePeriod": "NONE",
+# "effectiveDate": "2023-06-01",
+# "expiryDate": null,
+# "dateCreated": "2023-01-01T00:00:00.000000",
+# "dateUpdated": "2023-01-01T00:00:00.000000"
 # }
 ```
 
@@ -690,13 +690,13 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/relationships \
 
 # Response (200 OK)
 # {
-#   "productRelationshipId": 1,
-#   "productId": 1,
-#   "relatedProductId": 2,
-#   "relationshipType": "COMPLIMENTARY",
-#   "description": "Premium Savings Account complements Checking Account",
-#   "dateCreated": "2023-01-01T00:00:00.000000",
-#   "dateUpdated": "2023-01-01T00:00:00.000000"
+# "productRelationshipId": 1,
+# "productId": 1,
+# "relatedProductId": 2,
+# "relationshipType": "COMPLIMENTARY",
+# "description": "Premium Savings Account complements Checking Account",
+# "dateCreated": "2023-01-01T00:00:00.000000",
+# "dateUpdated": "2023-01-01T00:00:00.000000"
 # }
 ```
 
@@ -716,13 +716,13 @@ curl -X POST http://localhost:8080/api/v1/products/{productId}/localizations \
 
 # Response (200 OK)
 # {
-#   "productLocalizationId": 1,
-#   "productId": 1,
-#   "languageCode": "es",
-#   "localizedName": "Cuenta de Ahorro Premium",
-#   "localizedDescription": "Cuenta de ahorro de alto interés con beneficios premium",
-#   "dateCreated": "2023-01-01T00:00:00.000000",
-#   "dateUpdated": "2023-01-01T00:00:00.000000"
+# "productLocalizationId": 1,
+# "productId": 1,
+# "languageCode": "es",
+# "localizedName": "Cuenta de Ahorro Premium",
+# "localizedDescription": "Cuenta de ahorro de alto interés con beneficios premium",
+# "dateCreated": "2023-01-01T00:00:00.000000",
+# "dateUpdated": "2023-01-01T00:00:00.000000"
 # }
 ```
 
