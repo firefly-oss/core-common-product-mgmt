@@ -79,10 +79,10 @@ The service follows a domain-driven, hexagonal architecture with clear separatio
 
 ### Modular Structure
 
-- **common-platform-product-mgmt-core**: Contains the domain model, business logic, and service implementations with rich domain behaviors
-- **common-platform-product-mgmt-interfaces**: Defines DTOs, interfaces, and enums for the service with comprehensive API contracts
-- **common-platform-product-mgmt-models**: Contains database entities, repository implementations, and data access patterns
-- **common-platform-product-mgmt-web**: Provides REST API controllers, validation, security, and web-specific configurations
+- **core-common-product-mgmt-core**: Contains the domain model, business logic, and service implementations with rich domain behaviors
+- **core-common-product-mgmt-interfaces**: Defines DTOs, interfaces, and enums for the service with comprehensive API contracts
+- **core-common-product-mgmt-models**: Contains database entities, repository implementations, and data access patterns
+- **core-common-product-mgmt-web**: Provides REST API controllers, validation, security, and web-specific configurations
 
 ### Product Wizard
 
@@ -355,8 +355,8 @@ erDiagram
 
 1. **Clone the repository with access credentials**:
    ```bash
-   git clone https://github.com/firefly-oss/common-platform-product-mgmt.git
-   cd common-platform-product-mgmt
+   git clone https://github.com/firefly-oss/core-common-product-mgmt.git
+   cd core-common-product-mgmt
    ```
 
 2. **Configure database connection** in `application.yaml` or via environment variables:
@@ -381,7 +381,7 @@ erDiagram
 
 4. **Run the application with development profile**:
    ```bash
-   java -jar common-platform-product-mgmt-web/target/common-platform-product-mgmt.jar --spring.profiles.active=dev
+   java -jar core-common-product-mgmt-web/target/core-common-product-mgmt.jar --spring.profiles.active=dev
    ```
 
 5. **Access the development interfaces**:
@@ -394,7 +394,7 @@ erDiagram
 
 1. **Build the optimized Docker image**:
    ```bash
-   docker build -t common-platform-product-mgmt:latest --build-arg PROFILE=prod .
+   docker build -t core-common-product-mgmt:latest --build-arg PROFILE=prod .
    ```
 
 2. **Run the Docker container with enterprise configuration**:
@@ -411,7 +411,7 @@ erDiagram
      -e LOG_LEVEL=INFO \
      --name product-mgmt-service \
      --restart unless-stopped \
-     common-platform-product-mgmt:latest
+     core-common-product-mgmt:latest
    ```
 
 ### Kubernetes Deployment

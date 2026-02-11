@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: common-platform-product-mgmt
+  title: core-common-product-mgmt
   description: Product Management Core Application
   contact:
     name: Firefly Software Solutions Inc

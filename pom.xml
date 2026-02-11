@@ -11,14 +11,14 @@
     </parent>
 
     <groupId>com.firefly</groupId>
-    <artifactId>common-platform-product-mgmt</artifactId>
+    <artifactId>core-common-product-mgmt</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>common-platform-product-mgmt-core</module>
-        <module>common-platform-product-mgmt-interfaces</module>
-        <module>common-platform-product-mgmt-models</module>
-        <module>common-platform-product-mgmt-web</module>
-        <module>common-platform-product-mgmt-sdk</module>
+        <module>core-common-product-mgmt-core</module>
+        <module>core-common-product-mgmt-interfaces</module>
+        <module>core-common-product-mgmt-models</module>
+        <module>core-common-product-mgmt-web</module>
+        <module>core-common-product-mgmt-sdk</module>
     </modules>
 
     <properties>
@@ -27,9 +27,9 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <fireflyframework.bom.version>26.01.01</fireflyframework.bom.version>
-        <common-platform-product-mgmt.version>
+        <core-common-product-mgmt.version>
             1.0.0-SNAPSHOT
-        </common-platform-product-mgmt.version>
+        </core-common-product-mgmt.version>
     </properties>
 
     <dependencyManagement>
@@ -44,22 +44,22 @@
             <!-- Internal modules -->
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-product-mgmt-interfaces</artifactId>
+                <artifactId>core-common-product-mgmt-interfaces</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-product-mgmt-models</artifactId>
+                <artifactId>core-common-product-mgmt-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-product-mgmt-core</artifactId>
+                <artifactId>core-common-product-mgmt-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>common-platform-product-mgmt-web</artifactId>
+                <artifactId>core-common-product-mgmt-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
