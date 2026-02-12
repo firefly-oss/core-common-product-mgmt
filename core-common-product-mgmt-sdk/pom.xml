@@ -109,9 +109,9 @@
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <output>${generated-sources-dir}</output>
-                            <apiPackage>com.firefly.common.product.sdk.api</apiPackage>
-                            <modelPackage>com.firefly.common.product.sdk.model</modelPackage>
-                            <invokerPackage>com.firefly.common.product.sdk.invoker</invokerPackage>
+                            <apiPackage>com.firefly.core.product.sdk.api</apiPackage>
+                            <modelPackage>com.firefly.core.product.sdk.model</modelPackage>
+                            <invokerPackage>com.firefly.core.product.sdk.invoker</invokerPackage>
                             <configOptions>
                                 <java20>true</java20>
                                 <useTags>true</useTags>

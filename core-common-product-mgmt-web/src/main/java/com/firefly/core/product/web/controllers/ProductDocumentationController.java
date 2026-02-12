@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.web.controllers;
 
-import com.firefly.common.core.filters.FilterRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.filters.FilterRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.core.services.ProductDocumentationService;
 import com.firefly.core.product.interfaces.dtos.ProductDocumentationDTO;
 import io.swagger.v3.oas.annotations.Operation;

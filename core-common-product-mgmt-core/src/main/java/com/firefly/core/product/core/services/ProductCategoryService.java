@@ -17,8 +17,8 @@
 
 package com.firefly.core.product.core.services;
 
-import com.firefly.common.core.filters.FilterRequest;
-import com.firefly.common.core.queries.PaginationResponse;
+import org.fireflyframework.core.filters.FilterRequest;
+import org.fireflyframework.core.queries.PaginationResponse;
 import com.firefly.core.product.interfaces.dtos.ProductCategoryDTO;
 import reactor.core.publisher.Mono;
 
