@@ -24,15 +24,15 @@ replay_pid*
 *.iws
 # Target folder
 target/
-.idea/*
+# IntelliJ IDEA
+*.ipr
 # Refactoring backup directories
 .refactor-backup-*/
 *.refactor-backup-*
 
-# Additional Maven patterns added Fri Aug 29 20:27:47 CEST 2025
+# Additional Maven patterns added Fri Aug 29 20:28:01 CEST 2025
 **/target/generated-sources/
 **/target/generated-test-sources/
 **/target/generated-resources/
 .refactor-backup-*/
 .metadata-backup*
-/.idea/*
