@@ -21,6 +21,9 @@ tags:
     \ for a product"
 - name: Product Configuration
   description: APIs for managing key-value configuration data for products
+- name: Product Pricing
+  description: Read-only aggregator that composes product configurations into pricing
+    parameters for calculators
 - name: Product
   description: APIs for managing core product entities in the product management platform
 - name: Product Version
@@ -1510,6 +1513,42 @@ paths:
                 $ref: "#/components/schemas/PaginationResponse"
         "400":
           description: Invalid filter request
+  /api/v1/products/{productId}/pricing:
+    get:
+      tags:
+      - Product Pricing
+      summary: Get aggregated product pricing
+      description: "Returns the aggregated pricing parameters (limits, interest-rate\
+        \ brackets and fees) of a single product, composed from its underlying key-value\
+        \ configuration rows."
+      operationId: getProductPricing
+      parameters:
+      - name: productId
+        in: path
+        description: Unique identifier of the product
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved aggregated pricing
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductPricingDTO"
+        "404":
+          description: Product or required configuration row not found
+        "502":
+          description: Configuration payload could not be parsed (malformed JSON in
+            product_configuration)
   /api/v1/products/{productId}/documentation-requirements/mandatory:
     get:
       tags:
@@ -1676,6 +1715,38 @@ paths:
                 $ref: "#/components/schemas/ProductConfigurationDTO"
         "404":
           description: Product configuration not found
+  /api/v1/products/with-pricing:
+    get:
+      tags:
+      - Product Pricing
+      summary: List products with pricing
+      description: "Streams every product that has a complete pricing configuration.\
+        \ Optionally filters by the derived product-type label (e.g. PERSONAL_LOAN,\
+        \ LEASING)."
+      operationId: listProductsWithPricing
+      parameters:
+      - name: productType
+        in: query
+        description: "Optional derived product-type label (e.g. PERSONAL_LOAN, LEASING)"
+        required: false
+        schema:
+          type: string
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved the list of products with pricing
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductPricingDTO"
 components:
   schemas:
     ProductDTO:
@@ -2119,3 +2190,87 @@ components:
         options:
           $ref: "#/components/schemas/FilterOptions"
       description: Filter criteria for categories
+    FeeDefinitionDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: "Fee type code (e.g. OPENING_FEE, EARLY_REPAYMENT_FEE)"
+          example: OPENING_FEE
+        percentage:
+          type: number
+          description: "Percentage component of the fee, expressed as a percentage\
+            \ of the principal"
+          example: 1.0
+        fixed:
+          type: number
+          description: "Fixed component of the fee, expressed in the product currency"
+          example: 0
+      description: Fee definition applied to a product (percentage and/or fixed amount)
+    InterestRateBracketDTO:
+      type: object
+      properties:
+        minAmount:
+          type: number
+          description: Inclusive lower bound of the principal amount
+          example: 1000
+        maxAmount:
+          type: number
+          description: Inclusive upper bound of the principal amount
+          example: 60000
+        tin:
+          type: number
+          description: Nominal interest rate (TIN) expressed as an annual percentage
+          example: 7.99
+      description: Interest-rate bracket applicable to a product within an amount
+        range
+    ProductPricingDTO:
+      type: object
+      properties:
+        productId:
+          type: string
+          description: Unique identifier of the product
+          format: uuid
+          example: 00000000-0000-0000-0000-00000000000a
+        productCode:
+          type: string
+          description: Business code of the product
+          example: PERSONAL_LOAN_DEMO
+        productType:
+          type: string
+          description: "Derived product type label (e.g. PERSONAL_LOAN, LEASING)"
+          example: PERSONAL_LOAN
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: EUR
+        minAmount:
+          type: number
+          description: Inclusive minimum principal amount the product accepts
+          example: 1000
+        maxAmount:
+          type: number
+          description: Inclusive maximum principal amount the product accepts
+          example: 60000
+        minTerm:
+          type: integer
+          description: "Inclusive minimum term, in months"
+          format: int32
+          example: 12
+        maxTerm:
+          type: integer
+          description: "Inclusive maximum term, in months"
+          format: int32
+          example: 96
+        interestRates:
+          type: array
+          description: Ordered list of interest-rate brackets
+          items:
+            $ref: "#/components/schemas/InterestRateBracketDTO"
+        fees:
+          type: array
+          description: List of applicable fees
+          items:
+            $ref: "#/components/schemas/FeeDefinitionDTO"
+      description: "Read-only aggregated pricing parameters for a product, used by\
+        \ calculators and quote services"
