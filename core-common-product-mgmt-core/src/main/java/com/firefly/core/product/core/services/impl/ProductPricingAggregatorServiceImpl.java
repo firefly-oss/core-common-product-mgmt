@@ -177,6 +177,10 @@ public class ProductPricingAggregatorServiceImpl implements ProductPricingAggreg
                     .productId(product.getProductId())
                     .productCode(product.getProductCode())
                     .productType(deriveProductType(product))
+                    .name(product.getProductName())
+                    .description(product.getProductDescription())
+                    .available(product.getProductStatus() == ProductStatusEnum.ACTIVE)
+                    .features(parseMarketingFeatures(product.getMarketingFeatures()))
                     .currency(asString(limits.get("currency")))
                     .minAmount(asBigDecimal(limits.get("minAmount")))
                     .maxAmount(asBigDecimal(limits.get("maxAmount")))
@@ -222,6 +226,18 @@ public class ProductPricingAggregatorServiceImpl implements ProductPricingAggreg
             return upper;
         }
         return product.getProductType() != null ? product.getProductType().name() : null;
+    }
+
+    private List<String> parseMarketingFeatures(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+        } catch (JsonProcessingException ex) {
+            log.warn("Failed to parse product marketing_features JSON: {}", ex.getOriginalMessage());
+            return null;
+        }
     }
 
     private static String nullToEmptyObject(String json) {

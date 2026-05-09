@@ -50,6 +50,21 @@ public class ProductPricingDTO {
     @Schema(description = "Derived product type label (e.g. PERSONAL_LOAN, LEASING)", example = "PERSONAL_LOAN")
     private String productType;
 
+    @Schema(description = "Commercial name of the product", example = "Préstamo Personal")
+    private String name;
+
+    @Schema(description = "Short description shown on the product card",
+            example = "Financiación para particulares, sin necesidad de justificar la finalidad.")
+    private String description;
+
+    @Schema(description = "Whether the product is currently offered to customers (derived from product_status = ACTIVE)",
+            example = "true")
+    private Boolean available;
+
+    @Schema(description = "Commercial bullet list shown on the product card",
+            example = "[\"From 1.000 to 60.000 euros\", \"Term 12-96 months\"]")
+    private List<String> features;
+
     @Schema(description = "ISO 4217 currency code", example = "EUR")
     private String currency;
 

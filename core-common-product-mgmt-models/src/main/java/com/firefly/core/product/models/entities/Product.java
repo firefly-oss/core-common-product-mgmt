@@ -66,4 +66,12 @@ public class Product extends BaseEntity {
 
     @Column("end_date")
     private LocalDate endDate;
+
+    /**
+     * Commercial bullet list shown on the product card in the experience tier.
+     * Stored as a JSONB array of strings; mappers serialise/deserialise the
+     * list on the wire so callers see {@code List<String>} on the DTO.
+     */
+    @Column("marketing_features")
+    private String marketingFeatures;
 }
