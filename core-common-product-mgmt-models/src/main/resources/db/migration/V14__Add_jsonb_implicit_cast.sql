@@ -1,18 +1,27 @@
 -- V14__Add_jsonb_implicit_cast.sql
 --
--- Spring Data R2DBC binds Java String values as VARCHAR. The marketing_features
--- column added in V13 is JSONB and Postgres has no built-in implicit cast from
--- VARCHAR to JSONB, so every INSERT/UPDATE coming from the mapper's
--- stringListToJson() qualifier blew up at write time:
+-- ABANDONED MIGRATION. The previous attempt registered an implicit
+-- VARCHAR -> jsonb cast via `CREATE CAST (VARCHAR AS jsonb) WITH INOUT
+-- AS IMPLICIT`. That statement requires ownership of the source AND
+-- target Postgres types, and built-in types (`varchar`, `jsonb`) are
+-- owned by the postgres superuser — NOT by the application's service
+-- account, which is what the deployment connects as. The migration
+-- ran fine on local docker setups (where the app connects as the
+-- superuser) but failed in DEV with:
 --
---   column "marketing_features" is of type jsonb but expression is of type character varying
+--   ERROR: must be owner of type character varying or type jsonb
 --
--- Mirror the same pattern V3 already uses for the native enum columns: register
--- an implicit INOUT cast so the binding round-trips through the JSONB input
--- function transparently. The cast is global to the database, but it only
--- becomes visible when the source value is bound as VARCHAR — explicit JSONB
--- bindings (psql, pgAdmin, jdbc with `?::jsonb`) keep their normal behaviour.
+-- The cast was needed because Spring Data R2DBC bound Java String
+-- values as VARCHAR and Postgres has no built-in implicit cast to
+-- JSONB. The fix moved entirely to the Java side: the Product entity
+-- now declares `marketing_features` as `io.r2dbc.postgresql.codec.Json`
+-- so the R2DBC PostgreSQL driver binds the column as JSONB natively.
+-- No SQL cast is required.
+--
+-- This file is kept as a no-op so Flyway's version order stays stable
+-- across environments where the original (broken or not) V14 already
+-- exists in `flyway_schema_history`. Combined with
+-- `spring.flyway.repair-on-migrate=true` in application.yaml, the
+-- recorded checksum / failure state is rewritten on the next start.
 
-CREATE CAST (VARCHAR AS jsonb)
-    WITH INOUT
-    AS IMPLICIT;
+SELECT 1;
