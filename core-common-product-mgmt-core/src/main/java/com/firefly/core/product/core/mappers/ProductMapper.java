@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firefly.core.product.interfaces.dtos.ProductDTO;
 import com.firefly.core.product.models.entities.Product;
+import io.r2dbc.postgresql.codec.Json;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,24 +50,28 @@ public abstract class ProductMapper {
     public abstract void updateEntityFromDto(ProductDTO dto, @MappingTarget Product entity);
 
     @Named("jsonToStringList")
-    protected List<String> jsonToStringList(String marketingFeatures) {
-        if (marketingFeatures == null || marketingFeatures.isBlank()) {
+    protected List<String> jsonToStringList(Json marketingFeatures) {
+        if (marketingFeatures == null) {
+            return null;
+        }
+        String raw = marketingFeatures.asString();
+        if (raw == null || raw.isBlank()) {
             return null;
         }
         try {
-            return objectMapper.readValue(marketingFeatures, STRING_LIST_TYPE);
+            return objectMapper.readValue(raw, STRING_LIST_TYPE);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error parsing product marketing_features JSON", e);
         }
     }
 
     @Named("stringListToJson")
-    protected String stringListToJson(List<String> marketingFeatures) {
+    protected Json stringListToJson(List<String> marketingFeatures) {
         if (marketingFeatures == null) {
             return null;
         }
         try {
-            return objectMapper.writeValueAsString(marketingFeatures);
+            return Json.of(objectMapper.writeValueAsString(marketingFeatures));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error serialising product marketing_features", e);
         }

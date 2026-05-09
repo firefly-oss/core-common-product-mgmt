@@ -19,6 +19,7 @@ package com.firefly.core.product.models.entities;
 
 import com.firefly.core.product.interfaces.enums.ProductStatusEnum;
 import com.firefly.core.product.interfaces.enums.ProductTypeEnum;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,9 +70,15 @@ public class Product extends BaseEntity {
 
     /**
      * Commercial bullet list shown on the product card in the experience tier.
-     * Stored as a JSONB array of strings; mappers serialise/deserialise the
-     * list on the wire so callers see {@code List<String>} on the DTO.
+     * Stored as a JSONB array of strings.
+     * <p>
+     * Typed as {@link Json} so the R2DBC PostgreSQL driver binds the column
+     * as JSONB natively. A plain {@code String} would be bound as VARCHAR
+     * and Postgres has no implicit cast to JSONB without superuser-level
+     * type ownership, which the deployment does not have. Mappers serialise
+     * and deserialise the list on the wire so callers see {@code List<String>}
+     * on the DTO.
      */
     @Column("marketing_features")
-    private String marketingFeatures;
+    private Json marketingFeatures;
 }

@@ -30,6 +30,7 @@ import com.firefly.core.product.models.entities.Product;
 import com.firefly.core.product.models.entities.ProductConfiguration;
 import com.firefly.core.product.models.repositories.ProductConfigurationRepository;
 import com.firefly.core.product.models.repositories.ProductRepository;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fireflyframework.web.error.exceptions.BusinessException;
@@ -228,12 +229,16 @@ public class ProductPricingAggregatorServiceImpl implements ProductPricingAggreg
         return product.getProductType() != null ? product.getProductType().name() : null;
     }
 
-    private List<String> parseMarketingFeatures(String json) {
-        if (json == null || json.isBlank()) {
+    private List<String> parseMarketingFeatures(Json json) {
+        if (json == null) {
+            return null;
+        }
+        String raw = json.asString();
+        if (raw == null || raw.isBlank()) {
             return null;
         }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(raw, new TypeReference<List<String>>() {});
         } catch (JsonProcessingException ex) {
             log.warn("Failed to parse product marketing_features JSON: {}", ex.getOriginalMessage());
             return null;
