@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -48,4 +49,8 @@ public class ProductDTO extends BaseDTO {
     private ProductStatusEnum productStatus;
     private LocalDate launchDate;
     private LocalDate endDate;
+
+    @Schema(description = "Commercial bullet list shown on the product card",
+            example = "[\"From 1.000 to 60.000 euros\", \"Term 12-96 months\"]")
+    private List<String> marketingFeatures;
 }

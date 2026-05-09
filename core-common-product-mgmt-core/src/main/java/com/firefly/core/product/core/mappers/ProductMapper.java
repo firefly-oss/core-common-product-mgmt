@@ -17,19 +17,58 @@
 
 package com.firefly.core.product.core.mappers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firefly.core.product.interfaces.dtos.ProductDTO;
 import com.firefly.core.product.models.entities.Product;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface ProductMapper {
-    ProductDTO toDto(Product entity);
-    Product toEntity(ProductDTO dto);
+public abstract class ProductMapper {
+
+    private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {};
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Mapping(source = "marketingFeatures", target = "marketingFeatures", qualifiedByName = "jsonToStringList")
+    public abstract ProductDTO toDto(Product entity);
+
+    @Mapping(source = "marketingFeatures", target = "marketingFeatures", qualifiedByName = "stringListToJson")
+    public abstract Product toEntity(ProductDTO dto);
 
     @Mapping(target = "productId", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "dateCreated", ignore = true)
+    @Mapping(source = "marketingFeatures", target = "marketingFeatures", qualifiedByName = "stringListToJson")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromDto(ProductDTO dto, @MappingTarget Product entity);
+    public abstract void updateEntityFromDto(ProductDTO dto, @MappingTarget Product entity);
 
+    @Named("jsonToStringList")
+    protected List<String> jsonToStringList(String marketingFeatures) {
+        if (marketingFeatures == null || marketingFeatures.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(marketingFeatures, STRING_LIST_TYPE);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error parsing product marketing_features JSON", e);
+        }
+    }
+
+    @Named("stringListToJson")
+    protected String stringListToJson(List<String> marketingFeatures) {
+        if (marketingFeatures == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(marketingFeatures);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serialising product marketing_features", e);
+        }
+    }
 }
