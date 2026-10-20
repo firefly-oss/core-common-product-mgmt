@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>core-common-product-mgmt</artifactId>
+    <name>core-common-product-mgmt</name>
     <packaging>pom</packaging>
     <modules>
         <module>core-common-product-mgmt-core</module>

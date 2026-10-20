@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>core-common-product-mgmt-models</artifactId>
+    <name>core-common-product-mgmt-models</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
