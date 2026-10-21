@@ -23,6 +23,7 @@ import org.fireflyframework.core.queries.PaginationResponse;
 import io.fireflysoftware.core.product.core.mappers.ProductMapper;
 import io.fireflysoftware.core.product.core.services.ProductService;
 import io.fireflysoftware.core.product.interfaces.dtos.ProductDTO;
+import io.fireflysoftware.core.product.interfaces.enums.ProductStatusEnum;
 import io.fireflysoftware.core.product.models.entities.Product;
 import io.fireflysoftware.core.product.models.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,14 @@ public class ProductServiceImpl implements ProductService {
     public Mono<Void> deleteProduct(UUID productId) {
         return repository.findById(productId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Product not found with ID: " + productId)))
-                .flatMap(existingEntity -> repository.deleteById(productId));
+                .flatMap(existingEntity -> {
+                    ProductStatusEnum status = existingEntity.getProductStatus();
+                    if (status != ProductStatusEnum.DRAFT && status != ProductStatusEnum.PROPOSED) {
+                        return Mono.error(new RuntimeException(
+                                "Product " + productId + " is " + status
+                                        + " and cannot be deleted; retire it so agreements that reference it keep a resolvable definition"));
+                    }
+                    return repository.deleteById(productId);
+                });
     }
 }

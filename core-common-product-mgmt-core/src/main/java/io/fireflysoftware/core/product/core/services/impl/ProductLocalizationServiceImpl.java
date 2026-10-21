@@ -44,6 +44,7 @@ public class ProductLocalizationServiceImpl implements ProductLocalizationServic
 
     @Override
     public Mono<PaginationResponse<ProductLocalizationDTO>> filterLocalizations(UUID productId, FilterRequest<ProductLocalizationDTO> filterRequest) {
+        ProductScope.scope(filterRequest, ProductLocalizationDTO::new, ProductLocalizationDTO::setProductId, productId);
         return FilterUtils
                 .createFilter(
                         ProductLocalization.class,
@@ -82,6 +83,7 @@ public class ProductLocalizationServiceImpl implements ProductLocalizationServic
                         return Mono.error(new RuntimeException("Localization with ID " + localizationId + " does not belong to product " + productId));
                     }
                     mapper.updateEntityFromDto(localizationDTO, existingLocalization);
+                    existingLocalization.setProductId(productId);
                     return repository.save(existingLocalization);
                 })
                 .map(mapper::toDto);

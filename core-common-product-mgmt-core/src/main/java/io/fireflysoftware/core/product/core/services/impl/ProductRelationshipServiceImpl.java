@@ -44,6 +44,7 @@ public class ProductRelationshipServiceImpl implements ProductRelationshipServic
 
     @Override
     public Mono<PaginationResponse<ProductRelationshipDTO>> filterRelationships(UUID productId, FilterRequest<ProductRelationshipDTO> filterRequest) {
+        ProductScope.scope(filterRequest, ProductRelationshipDTO::new, ProductRelationshipDTO::setProductId, productId);
         return FilterUtils
                 .createFilter(
                         ProductRelationship.class,
@@ -54,6 +55,9 @@ public class ProductRelationshipServiceImpl implements ProductRelationshipServic
 
     @Override
     public Mono<ProductRelationshipDTO> createRelationship(UUID productId, ProductRelationshipDTO relationshipDTO) {
+        if (productId.equals(relationshipDTO.getRelatedProductId())) {
+            return Mono.error(new RuntimeException("A product cannot be related to itself"));
+        }
         return Mono.just(relationshipDTO)
                 .doOnNext(dto -> dto.setProductId(productId))
                 .map(mapper::toEntity)
@@ -82,6 +86,10 @@ public class ProductRelationshipServiceImpl implements ProductRelationshipServic
                         return Mono.error(new RuntimeException("Relationship with ID " + relationshipId + " does not belong to product " + productId));
                     }
                     mapper.updateEntityFromDto(relationshipDTO, existingRelationship);
+                    existingRelationship.setProductId(productId);
+                    if (productId.equals(existingRelationship.getRelatedProductId())) {
+                        return Mono.error(new RuntimeException("A product cannot be related to itself"));
+                    }
                     return repository.save(existingRelationship);
                 })
                 .map(mapper::toDto);

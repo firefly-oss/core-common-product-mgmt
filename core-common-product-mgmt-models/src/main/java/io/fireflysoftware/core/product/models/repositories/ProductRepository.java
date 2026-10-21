@@ -21,6 +21,7 @@ import io.fireflysoftware.core.product.interfaces.enums.ProductStatusEnum;
 import io.fireflysoftware.core.product.models.entities.Product;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -60,4 +61,6 @@ public interface ProductRepository extends BaseRepository<Product, UUID> {
      *         to the given tenant
      */
     Flux<Product> findByProductStatusAndTenantId(ProductStatusEnum status, UUID tenantId);
+
+    Mono<Long> countByProductCategoryId(UUID productCategoryId);
 }

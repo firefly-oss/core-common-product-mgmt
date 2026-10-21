@@ -44,6 +44,7 @@ public class ProductDocumentationServiceImpl implements ProductDocumentationServ
 
     @Override
     public Mono<PaginationResponse<ProductDocumentationDTO>> filterDocumentations(UUID productId, FilterRequest<ProductDocumentationDTO> filterRequest) {
+        ProductScope.scope(filterRequest, ProductDocumentationDTO::new, ProductDocumentationDTO::setProductId, productId);
         return FilterUtils
                 .createFilter(
                         ProductDocumentation.class,
@@ -82,6 +83,7 @@ public class ProductDocumentationServiceImpl implements ProductDocumentationServ
                         return Mono.error(new RuntimeException("Documentation with ID " + documentationId + " does not belong to product " + productId));
                     }
                     mapper.updateEntityFromDto(documentationDTO, existingDocumentation);
+                    existingDocumentation.setProductId(productId);
                     return repository.save(existingDocumentation);
                 })
                 .map(mapper::toDto);

@@ -21,5 +21,6 @@ public enum ProductStatusEnum {
     PROPOSED,
     ACTIVE,
     RETIRED,
-    DRAFT
+    DRAFT,
+    SUSPENDED
 }

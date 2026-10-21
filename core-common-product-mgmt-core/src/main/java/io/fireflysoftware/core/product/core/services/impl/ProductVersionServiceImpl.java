@@ -44,6 +44,7 @@ public class ProductVersionServiceImpl implements ProductVersionService {
 
     @Override
     public Mono<PaginationResponse<ProductVersionDTO>> filterProductVersions(UUID productId, FilterRequest<ProductVersionDTO> filterRequest) {
+        ProductScope.scope(filterRequest, ProductVersionDTO::new, ProductVersionDTO::setProductId, productId);
         return FilterUtils
                 .createFilter(
                         ProductVersion.class,
@@ -82,6 +83,7 @@ public class ProductVersionServiceImpl implements ProductVersionService {
                         return Mono.error(new RuntimeException("Product version with ID " + versionId + " does not belong to product " + productId));
                     }
                     mapper.updateEntityFromDto(productVersionDTO, existingVersion);
+                    existingVersion.setProductId(productId);
                     return repository.save(existingVersion);
                 })
                 .map(mapper::toDto);

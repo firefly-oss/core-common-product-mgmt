@@ -17,7 +17,6 @@
 
 package io.fireflysoftware.core.product.core.services.impl;
 
-import org.fireflyframework.core.filters.FilterRequest;
 import org.fireflyframework.core.filters.FilterUtils;
 import org.fireflyframework.core.queries.PaginationResponse;
 import io.fireflysoftware.core.product.core.mappers.ProductCategoryMapper;
@@ -25,6 +24,8 @@ import io.fireflysoftware.core.product.core.services.ProductCategoryService;
 import io.fireflysoftware.core.product.interfaces.dtos.ProductCategoryDTO;
 import io.fireflysoftware.core.product.models.entities.ProductCategory;
 import io.fireflysoftware.core.product.models.repositories.ProductCategoryRepository;
+import io.fireflysoftware.core.product.models.repositories.ProductRepository;
+import org.fireflyframework.core.filters.FilterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,8 +43,15 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     @Autowired
     private ProductCategoryMapper mapper;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     @Override
     public Mono<PaginationResponse<ProductCategoryDTO>> filterRootCategories(FilterRequest<ProductCategoryDTO> filterRequest) {
+        if (filterRequest.getFilters() == null) {
+            filterRequest.setFilters(new ProductCategoryDTO());
+        }
+        FilterRequest.setNullFilter(filterRequest.getFilters(), "parentCategoryId");
         return FilterUtils
                 .createFilter(
                         ProductCategory.class,
@@ -56,16 +64,28 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     public Mono<PaginationResponse<ProductCategoryDTO>> filterChildCategories(UUID parentCategoryId, FilterRequest<ProductCategoryDTO> filterRequest) {
         return repository.findById(parentCategoryId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Parent category not found with ID: " + parentCategoryId)))
-                .flatMap(parent -> FilterUtils
-                        .createFilter(
-                                ProductCategory.class,
-                                mapper::toDto
-                        )
-                        .filter(filterRequest));
+                .flatMap(parent -> {
+                    if (filterRequest.getFilters() == null) {
+                        filterRequest.setFilters(new ProductCategoryDTO());
+                    }
+                    filterRequest.getFilters().setParentCategoryId(parentCategoryId);
+                    return FilterUtils
+                            .createFilter(
+                                    ProductCategory.class,
+                                    mapper::toDto
+                            )
+                            .filter(filterRequest);
+                });
     }
 
     @Override
     public Mono<PaginationResponse<ProductCategoryDTO>> filterCategoriesByName(String namePattern, FilterRequest<ProductCategoryDTO> filterRequest) {
+        if (filterRequest.getFilters() == null) {
+            filterRequest.setFilters(new ProductCategoryDTO());
+        }
+        if (namePattern != null && !namePattern.isBlank()) {
+            filterRequest.getFilters().setCategoryName(namePattern);
+        }
         return FilterUtils
                 .createFilter(
                         ProductCategory.class,
@@ -114,15 +134,20 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     public Mono<Void> deleteCategory(UUID categoryId) {
         return repository.findById(categoryId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Category not found with ID: " + categoryId)))
-                .flatMap(existingEntity ->
-                    repository.countByParentCategoryId(categoryId)
-                            .flatMap(count -> {
-                                if (count > 0) {
-                                    return Mono.error(new RuntimeException("Cannot delete category with ID " + categoryId + " because it has child categories"));
-                                }
-                                return repository.deleteById(categoryId);
-                            })
-                );
+                .flatMap(existingEntity -> repository.countByParentCategoryId(categoryId))
+                .flatMap(childCount -> {
+                    if (childCount > 0) {
+                        return Mono.error(new RuntimeException("Cannot delete category with ID " + categoryId + " because it has child categories"));
+                    }
+                    return productRepository.countByProductCategoryId(categoryId);
+                })
+                .flatMap(productCount -> {
+                    if (productCount > 0) {
+                        return Mono.error(new RuntimeException(
+                                "Cannot delete category with ID " + categoryId + " because products still use it"));
+                    }
+                    return repository.deleteById(categoryId);
+                });
     }
 
     /**

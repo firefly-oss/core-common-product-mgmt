@@ -22,6 +22,7 @@ import io.fireflysoftware.core.product.core.services.impl.ProductCategoryService
 import io.fireflysoftware.core.product.interfaces.dtos.ProductCategoryDTO;
 import io.fireflysoftware.core.product.models.entities.ProductCategory;
 import io.fireflysoftware.core.product.models.repositories.ProductCategoryRepository;
+import io.fireflysoftware.core.product.models.repositories.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,9 @@ class ProductCategoryServiceImplTest {
 
     @Mock
     private ProductCategoryMapper mapper;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @InjectMocks
     private ProductCategoryServiceImpl service;
@@ -77,6 +81,7 @@ class ProductCategoryServiceImplTest {
                 .dateCreated(now)
                 .dateUpdated(now)
                 .build();
+        lenient().when(productRepository.countByProductCategoryId(any())).thenReturn(Mono.just(0L));
     }
 
     // Note: filterRootCategories, filterChildCategories, and filterCategoriesByName tests are not included
@@ -343,5 +348,20 @@ class ProductCategoryServiceImplTest {
         verify(repository).findById(CATEGORY_ID);
         verify(repository).countByParentCategoryId(CATEGORY_ID);
         verify(repository).deleteById(CATEGORY_ID);
+    }
+
+    @Test
+    void deleteCategory_HasProducts() {
+        when(repository.findById(CATEGORY_ID)).thenReturn(Mono.just(productCategory));
+        when(repository.countByParentCategoryId(CATEGORY_ID)).thenReturn(Mono.just(0L));
+        when(productRepository.countByProductCategoryId(CATEGORY_ID)).thenReturn(Mono.just(1L));
+
+        StepVerifier.create(service.deleteCategory(CATEGORY_ID))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException
+                                && throwable.getMessage().contains("products still use it"))
+                .verify();
+
+        verify(repository, never()).deleteById((UUID) any());
     }
 }

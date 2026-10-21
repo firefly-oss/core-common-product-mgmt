@@ -159,7 +159,7 @@ class ProductPricingAggregatorServiceImplTest {
     }
 
     @Test
-    void getProductPricing_missingLimitsConfig_emitsError() {
+    void getProductPricing_missingLimitsConfig_stillReturnsTheProduct() {
         when(productRepository.findById(PERSONAL_LOAN_ID))
                 .thenReturn(Mono.just(personalLoan));
         // Only PRICING rows present; LIMITS/amount_term is missing.
@@ -175,14 +175,31 @@ class ProductPricingAggregatorServiceImplTest {
                 .thenReturn(Flux.fromIterable(partial));
 
         StepVerifier.create(service.getProductPricing(PERSONAL_LOAN_ID))
-                .expectErrorSatisfies(err -> {
-                    assertThat(err).isInstanceOf(BusinessException.class);
-                    BusinessException be = (BusinessException) err;
-                    assertThat(be.getStatus()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-                    assertThat(be.getCode()).isEqualTo("PRODUCT_CONFIG_MISSING");
-                    assertThat(be.getMessage()).contains("LIMITS/amount_term");
+                .assertNext(dto -> {
+                    assertThat(dto.getProductId()).isEqualTo(PERSONAL_LOAN_ID);
+                    assertThat(dto.getMinAmount()).isNull();
+                    assertThat(dto.getMaxAmount()).isNull();
+                    assertThat(dto.getInterestRates()).hasSize(1);
+                    assertThat(dto.getFees()).hasSize(1);
                 })
-                .verify();
+                .verifyComplete();
+    }
+
+    @Test
+    void getProductPricing_withoutLendingRows_isStillAProduct() {
+        when(productRepository.findById(PERSONAL_LOAN_ID))
+                .thenReturn(Mono.just(personalLoan));
+        when(productConfigurationRepository.findByProductId(PERSONAL_LOAN_ID))
+                .thenReturn(Flux.empty());
+
+        StepVerifier.create(service.getProductPricing(PERSONAL_LOAN_ID))
+                .assertNext(dto -> {
+                    assertThat(dto.getProductCode()).isEqualTo(personalLoan.getProductCode());
+                    assertThat(dto.getCurrency()).isNull();
+                    assertThat(dto.getInterestRates()).isEmpty();
+                    assertThat(dto.getFees()).isEmpty();
+                })
+                .verifyComplete();
     }
 
     @Test

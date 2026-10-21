@@ -47,6 +47,7 @@ public class ProductConfigurationServiceImpl implements ProductConfigurationServ
     @Override
     public Mono<PaginationResponse<ProductConfigurationDTO>> filterConfigurations(
             UUID productId, FilterRequest<ProductConfigurationDTO> filterRequest) {
+        ProductScope.scope(filterRequest, ProductConfigurationDTO::new, ProductConfigurationDTO::setProductId, productId);
         return FilterUtils
                 .createFilter(
                         ProductConfiguration.class,
@@ -99,6 +100,7 @@ public class ProductConfigurationServiceImpl implements ProductConfigurationServ
                         return Mono.error(new RuntimeException("Configuration with ID " + configId + " does not belong to product " + productId));
                     }
                     mapper.updateEntityFromDto(configDTO, existingConfig);
+                    existingConfig.setProductId(productId);
                     return repository.save(existingConfig);
                 })
                 .map(mapper::toDto);

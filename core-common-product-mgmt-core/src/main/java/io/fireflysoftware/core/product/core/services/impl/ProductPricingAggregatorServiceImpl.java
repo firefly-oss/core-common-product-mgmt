@@ -52,7 +52,7 @@ import java.util.UUID;
  * LIMITS for a product, parses the JSON payloads with Jackson and returns a
  * calculator-friendly {@link ProductPricingDTO}.
  *
- * <p>Three configuration rows are required per product:
+ * <p>The lending calculator reads three configuration rows when they exist:
  * <ul>
  *   <li>{@code (LIMITS, amount_term)} — JSON object with {@code currency},
  *       {@code minAmount}, {@code maxAmount}, {@code minTerm},
@@ -63,9 +63,10 @@ import java.util.UUID;
  *       {@code {type,percentage,fixed}} objects.</li>
  * </ul>
  *
- * <p>Missing rows surface as a "configuration not found" error; malformed JSON
- * is propagated as a "configuration parse error" so the controller layer can
- * map it to a 502 Bad Gateway.
+ * <p>A product that does not have those rows is still a product. Missing rows
+ * leave the calculator fields empty. Malformed JSON is propagated as a
+ * "configuration parse error" so the controller layer can map it to a 502
+ * Bad Gateway.
  */
 @Slf4j
 @Service
@@ -108,7 +109,7 @@ public class ProductPricingAggregatorServiceImpl implements ProductPricingAggreg
     public Flux<ProductPricingDTO> listProductsWithPricing(String productType) {
         String filter = productType == null ? null : productType.trim();
         // Regulatory hardening: only ACTIVE products are eligible for pricing
-        // aggregation. Returning RETIRED / DRAFT / PROPOSED products would let
+        // aggregation. Returning RETIRED, SUSPENDED, DRAFT or PROPOSED products would let
         // a deprecated rate leak into the calculator and surface to a borrower
         // a number that the scoring engine would later contradict. The
         // {@code product.product_status} column is declared NOT NULL by V2, so
@@ -136,41 +137,27 @@ public class ProductPricingAggregatorServiceImpl implements ProductPricingAggreg
     private Mono<ProductPricingDTO> buildPricing(Product product, List<ProductConfiguration> configs) {
         Optional<ProductConfiguration> limitsCfg = findConfig(
                 configs, ProductConfigTypeEnum.LIMITS, CONFIG_KEY_AMOUNT_TERM);
-        if (limitsCfg.isEmpty()) {
-            return Mono.error(new BusinessException(
-                    HttpStatus.UNPROCESSABLE_ENTITY,
-                    "PRODUCT_CONFIG_MISSING",
-                    "Configuration not found: LIMITS/amount_term for product " + product.getProductId()));
-        }
-
         Optional<ProductConfiguration> ratesCfg = findConfig(
                 configs, ProductConfigTypeEnum.PRICING, CONFIG_KEY_INTEREST_RATE_BRACKETS);
-        if (ratesCfg.isEmpty()) {
-            return Mono.error(new BusinessException(
-                    HttpStatus.UNPROCESSABLE_ENTITY,
-                    "PRODUCT_CONFIG_MISSING",
-                    "Configuration not found: PRICING/interest_rate_brackets for product " + product.getProductId()));
-        }
-
         Optional<ProductConfiguration> feesCfg = findConfig(
                 configs, ProductConfigTypeEnum.PRICING, CONFIG_KEY_FEES);
-        if (feesCfg.isEmpty()) {
-            return Mono.error(new BusinessException(
-                    HttpStatus.UNPROCESSABLE_ENTITY,
-                    "PRODUCT_CONFIG_MISSING",
-                    "Configuration not found: PRICING/fees for product " + product.getProductId()));
-        }
 
         try {
-            Map<String, Object> limits = objectMapper.readValue(
+            Map<String, Object> limits = limitsCfg.isEmpty()
+                    ? Map.of()
+                    : objectMapper.readValue(
                     nullToEmptyObject(limitsCfg.get().getConfigValue()),
                     new TypeReference<Map<String, Object>>() {});
 
-            List<InterestRateBracketDTO> rates = objectMapper.readValue(
+            List<InterestRateBracketDTO> rates = ratesCfg.isEmpty()
+                    ? List.of()
+                    : objectMapper.readValue(
                     nullToEmptyArray(ratesCfg.get().getConfigValue()),
                     new TypeReference<List<InterestRateBracketDTO>>() {});
 
-            List<FeeDefinitionDTO> fees = objectMapper.readValue(
+            List<FeeDefinitionDTO> fees = feesCfg.isEmpty()
+                    ? List.of()
+                    : objectMapper.readValue(
                     nullToEmptyArray(feesCfg.get().getConfigValue()),
                     new TypeReference<List<FeeDefinitionDTO>>() {});
 
