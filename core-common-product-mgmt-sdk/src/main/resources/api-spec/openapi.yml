@@ -1667,6 +1667,7 @@ components:
             - ACTIVE
             - RETIRED
             - DRAFT
+            - SUSPENDED
         launchDate:
           type: string
           format: date
