@@ -1,9 +1,9 @@
 <a href="https://fireflysoftware.io/openplatform/">
 <picture>
-  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/firefly-oss/.github/main/profile/assets/banner-narrow-dark.svg">
-  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/firefly-oss/.github/main/profile/assets/banner-narrow-light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/firefly-oss/.github/main/profile/assets/banner-dark.svg">
-  <img src="https://raw.githubusercontent.com/firefly-oss/.github/main/profile/assets/banner-light.svg" alt="Firefly OpenPlatform - Core Common - Product Management" width="100%">
+  <source media="(max-width: 640px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/fireflysoftwaresolutions/.github/main/profile/assets/banner-narrow-dark.svg">
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fireflysoftwaresolutions/.github/main/profile/assets/banner-narrow-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/fireflysoftwaresolutions/.github/main/profile/assets/banner-dark.svg">
+  <img src="https://raw.githubusercontent.com/fireflysoftwaresolutions/.github/main/profile/assets/banner-light.svg" alt="Firefly OpenPlatform - Core Common - Product Management" width="100%">
 </picture>
 </a>
 
@@ -64,14 +64,14 @@ As an advanced Product Configuration Wizard, this service:
 - Guides product managers through a structured, workflow-driven process of creating and configuring new products
 - Enforces complex business rules, validation logic, and compliance requirements during product setup
 - Supports sophisticated product bundling, cross-selling strategies, and multi-dimensional relationship definitions
-- Manages the complete product lifecycle from conception and draft to active deployment to retirement and archival
+- Manages product status across `DRAFT`, `PROPOSED`, `ACTIVE`, `SUSPENDED`, and `RETIRED`
 - Provides an extensible framework for enhancing products with custom attributes, behaviors, and integration points
 
 The service is built using a reactive programming model with Spring WebFlux and leverages event-driven architecture principles, ensuring enterprise-grade performance, horizontal scalability, and operational resilience even under high-concurrency conditions. The non-blocking I/O model optimizes resource utilization and responsiveness, making it suitable for mission-critical financial applications.
 
 ## Enterprise Features
 
-- **Comprehensive Product Management**: Create, read, update, and delete product information with full audit trails and governance controls
+- **Comprehensive Product Management**: Create, read, and update product information with audit trails and governance controls. A `DRAFT` or `PROPOSED` product can be deleted. An `ACTIVE`, `SUSPENDED`, or `RETIRED` product stays on file. Retire an offered product so agreements that reference it keep a resolvable definition
 - **Intuitive Product Wizard**: Streamline product creation with a step-by-step wizard interface for faster configuration and deployment
 - **Hierarchical Product Categorization**: Implement multi-level product taxonomies with flexible categorization schemes and dynamic subtypes
 - **Strategic Product Bundling**: Design and manage sophisticated product bundles with configurable pricing strategies and promotional rules
@@ -80,7 +80,7 @@ The service is built using a reactive programming model with Spring WebFlux and 
 - **Complete Lifecycle Governance**: Track and enforce product lifecycle states, transitions, and approval workflows with regulatory compliance
 - **Configurable Product Limits**: Define and enforce product-specific limits with temporal and conditional constraints
 - **Global Localization Framework**: Support for product information in multiple languages with region-specific regulatory content
-- **Dynamic Pricing Engine**: Manage sophisticated product pricing models including tiered, conditional, and currency-specific pricing
+- **Dynamic Pricing Engine**: Manage product pricing models including tiered, conditional, and currency-specific pricing. A product is valid without lending pricing rows. Interest-rate brackets, fees, and amount limits are optional, and the pricing view returns the product with empty rates and fees when those rows are absent
 - **Multi-dimensional Relationship Mapping**: Define and visualize complex relationships between products for cross-selling and upselling
 - **Enterprise Versioning System**: Track product versions with immutable change history and point-in-time reconstruction capabilities
 - **Integrated Documentation Management**: Centrally manage product-related documentation with version control and approval workflows
